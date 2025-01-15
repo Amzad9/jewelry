@@ -2,7 +2,7 @@
 import {BrowserRouter, Route, Routes } from "react-router-dom";
 import './App.css'
 import Home from "./pages/Home";
-import Category from "./pages/Category";
+import {Category} from "@/pages/Category";
 import SubCategory from "./pages/SubCategory";
 import Order from "./pages/Order";
 import Products from "./pages/Products";
