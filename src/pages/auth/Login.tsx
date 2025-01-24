@@ -2,7 +2,6 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { toast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 
 import {
@@ -14,6 +13,8 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { useNavigate } from "react-router-dom"
+
 import api from "@/service/api"
 
 const FormSchema = z.object({
@@ -33,61 +34,59 @@ const Login = () => {
       password: "",
     },
   })
+  const navigation = useNavigate()
 
 
 
   async function userLogin(data: z.infer<typeof FormSchema>) {
     try {
-     const response = await api.userLogin(data);
-      toast({
-        title: "Login Successful",
-        description: `Welcome back, ${response.data.user.firstName}!`,
-      });
+      const response = await api.userLogin(data);
+      console.log("response", response)
+      if (response.status === 200 && response.data.token !== undefined) {
+        sessionStorage.setItem("token", response.data.token);
+        navigation('/')
+      } else {
+        navigation('login')
+      }
     } catch (error) {
       console.error("Login error:", error);
-      toast({
-        title: "Login Failed",
-        description: "Please check your contact and password.",
-        variant: "destructive",
-      });
     }
   }
 
   return (
-<div className="flex justify-center h-screen items-center">
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(userLogin)} className="w-3/12 space-y-6 border border-gray-400 p-6">
-        <FormField
-          control={form.control}
-          name="contact"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Contact</FormLabel>
-              <FormControl>
-                <Input placeholder="Mobile Number" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-       <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
-              <FormControl>
-                <Input placeholder="Password" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit">Submit</Button>
-      </form>
-    </Form>
-
-</div>
+    <div className="flex justify-center h-screen items-center">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(userLogin)} className="md:w-3/12 space-y-6 border border-gray-200 p-6 shadow-md">
+          <FormField
+            control={form.control}
+            name="contact"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Contact</FormLabel>
+                <FormControl>
+                  <Input placeholder="Mobile Number" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <Input placeholder="Password" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type="submit" className="w-full">Submit</Button>
+        </form>
+      </Form>
+    </div>
   )
 }
 
