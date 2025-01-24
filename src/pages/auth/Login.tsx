@@ -18,7 +18,7 @@ import api from "@/service/api"
 
 const FormSchema = z.object({
   contact: z.string().min(10, {
-    message: "contact must be at least 10 characters.",
+    message: "contact must be at least 10 Digit.",
   }),
   password: z.string().min(6, {
     message: "Password must be at least 6 characters.",
@@ -54,7 +54,7 @@ const Login = () => {
   }
 
   return (
-<div>
+<div className="flex justify-center h-screen items-center">
     <Form {...form}>
       <form onSubmit={form.handleSubmit(userLogin)} className="w-3/12 space-y-6 border border-gray-400 p-6">
         <FormField
@@ -62,9 +62,9 @@ const Login = () => {
           name="contact"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>contact</FormLabel>
+              <FormLabel>Contact</FormLabel>
               <FormControl>
-                <Input placeholder="shadcn" {...field} />
+                <Input placeholder="Mobile Number" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -75,9 +75,9 @@ const Login = () => {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>password</FormLabel>
+              <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input placeholder="shadcn" {...field} />
+                <Input placeholder="Password" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
