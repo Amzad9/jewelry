@@ -16,8 +16,14 @@ export default {
     getCategories() {
         return service.get('category')
     },
+    deleteCategoriesById(id: string) {
+        return service.delete(`category/${id}`)
+    },
     getSubCategories() {
         return service.get('subcategory')
+    },
+    deleteSubCategoriesById(id: string) {
+        return service.delete(`subcategory/${id}`)
     },
     getProducts() {
         return service.get('product')

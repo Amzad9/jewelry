@@ -1,5 +1,6 @@
 
 import React, { ChangeEvent, useEffect, useState } from "react"
+import { useSelector, useDispatch } from "react-redux"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -26,7 +27,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
@@ -51,6 +51,8 @@ import { DrawerTrigger } from "@/components/ui/drawer"
 import { Dialog } from "@radix-ui/react-dialog"
 import api from "@/service/api"
 import { CategoryType } from '@/types/categoryTypes'
+import Loader from "@/components/Loader"
+import { startLoading, stopLoading } from "@/store/loaderSlice"
 
 
 const FormSchema = z.object({
@@ -61,7 +63,7 @@ const FormSchema = z.object({
     message: "Description is required.",
   }),
 
- image: z
+  image: z
     .custom<File>((v) => v instanceof File, {
       message: 'Image is required',
     })
@@ -138,10 +140,18 @@ export const columns: ColumnDef<CategoryType>[] = [
   },
 
   {
-    id: "actions",
+    id: "_id",
     enableHiding: false,
     cell: ({ row }) => {
-      const payment = row
+      async function deleteSubCategory(id: string) {
+        alert(`Are you sure you want to delete this category? ${row.original?._id}`)
+        try {
+          const res = await api.deleteSubCategoriesById(id)
+          console.log("res", res)
+        } catch (error) {
+          console.log(error)
+        }
+      }
 
       return (
         <DropdownMenu>
@@ -153,14 +163,9 @@ export const columns: ColumnDef<CategoryType>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment?.id)}
-            >
-              Copy payment ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
+
+            <DropdownMenuItem onClick={() => row.original?._id && deleteSubCategory(row.original._id)}>Delete</DropdownMenuItem>
+            <DropdownMenuItem>Edit</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )
@@ -169,9 +174,10 @@ export const columns: ColumnDef<CategoryType>[] = [
 ]
 
 function SubCategory() {
- const [imageFile, setImageFile] = useState<File | undefined>(undefined);
+  const [imageFile, setImageFile] = useState<File | undefined>(undefined);
   const [preview, setPreview] = React.useState<string | null>(null);
-// const [error, setError] = useState<string | null>(null);
+  const dispatch = useDispatch();
+  const loader = useSelector((state: { loader: { loading: boolean } }) => state?.loader?.loading);
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -180,18 +186,18 @@ function SubCategory() {
       image: imageFile
     },
   })
-const onChangeImage = (e: ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0] || null;
-  if (file && file.type.startsWith("image/")) {
-    setImageFile(file);
-    form.setValue("image", file); // Update the form state
-    setPreview(URL.createObjectURL(file));
-  } else {
-    alert("Please upload a valid image file.");
-    setPreview(null);
-    // form.setValue("image", null); // Reset the form state
-  }
-};
+  const onChangeImage = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    if (file && file.type.startsWith("image/")) {
+      setImageFile(file);
+      form.setValue("image", file); // Update the form state
+      setPreview(URL.createObjectURL(file));
+    } else {
+      alert("Please upload a valid image file.");
+      setPreview(null);
+      // form.setValue("image", null); // Reset the form state
+    }
+  };
   const [categories, setSubCategories] = useState<CategoryType[]>([]);
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -230,20 +236,24 @@ const onChangeImage = (e: ChangeEvent<HTMLInputElement>) => {
     }
   }
   useEffect(() => {
-    getSubCategories()
-  }, [])
+    dispatch(startLoading());
+    getSubCategories().finally(() => {
+      dispatch(stopLoading());
+    });
+  }, [dispatch]);
+
   const addSubCategory = async (data: z.infer<typeof FormSchema>) => {
 
 
-  const formData = new FormData();
- formData.append("name", data.name);
-      formData.append("description", data.description);
-  if (data.image instanceof File) {
-    console.log(formData);
-    formData.append("image", data.image);
-  }
+    const formData = new FormData();
+    formData.append("name", data.name);
+    formData.append("description", data.description);
+    if (data.image instanceof File) {
+      console.log(formData);
+      formData.append("image", data.image);
+    }
     try {
-      
+
       const res = await api.addCategory(formData)
       console.log("resData", res)
     } catch (error) {
@@ -252,6 +262,7 @@ const onChangeImage = (e: ChangeEvent<HTMLInputElement>) => {
   }
   return (
     <>
+      <Loader loader={loader} />
       <div className="w-full">
         <DrawerDemo title="Category Form">
           <Form {...form}>
@@ -280,16 +291,16 @@ const onChangeImage = (e: ChangeEvent<HTMLInputElement>) => {
                   </FormItem>
                 )}
               />
-               <input
-                        type="file"
-                        accept="image/*"
-                        onChange = {onChangeImage}
-                      />
-             
+              <input
+                type="file"
+                accept="image/*"
+                onChange={onChangeImage}
+              />
+
               <Button type="submit" className="w-full">Submit</Button>
             </form>
           </Form>
- {preview && <img src={preview || undefined} alt="Preview" width="200" />}
+          {preview && <img src={preview || undefined} alt="Preview" width="200" />}
         </DrawerDemo>
         <Dialog>
           <DrawerTrigger>
@@ -411,4 +422,4 @@ const onChangeImage = (e: ChangeEvent<HTMLInputElement>) => {
     </>
   )
 }
-export  default SubCategory
+export default SubCategory
