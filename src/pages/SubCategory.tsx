@@ -192,7 +192,7 @@ const onChangeImage = (e: ChangeEvent<HTMLInputElement>) => {
     // form.setValue("image", null); // Reset the form state
   }
 };
-  const [categories, setCategories] = useState<CategoryType[]>([]);
+  const [categories, setSubCategories] = useState<CategoryType[]>([]);
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -220,19 +220,19 @@ const onChangeImage = (e: ChangeEvent<HTMLInputElement>) => {
     },
   })
 
-  const getCategories = async () => {
+  const getSubCategories = async () => {
     try {
-      const res = await api.getCategories();
+      const res = await api.getSubCategories();
       console.log("res", res?.data?.payload)
-      setCategories(res?.data?.payload)
+      setSubCategories(res?.data?.payload)
     } catch (error) {
       console.log(error)
     }
   }
   useEffect(() => {
-    getCategories()
+    getSubCategories()
   }, [])
-  const addCategory = async (data: z.infer<typeof FormSchema>) => {
+  const addSubCategory = async (data: z.infer<typeof FormSchema>) => {
 
 
   const formData = new FormData();
@@ -255,7 +255,7 @@ const onChangeImage = (e: ChangeEvent<HTMLInputElement>) => {
       <div className="w-full">
         <DrawerDemo title="Category Form">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(addCategory)}>
+            <form onSubmit={form.handleSubmit(addSubCategory)}>
               <FormField
                 control={form.control}
                 name="name"

@@ -15,5 +15,11 @@ export default {
     },
     getCategories() {
         return service.get('category')
+    },
+    getSubCategories() {
+        return service.get('subcategory')
+    },
+    getProducts() {
+        return service.get('product')
     }
 }

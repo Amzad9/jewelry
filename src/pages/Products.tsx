@@ -222,7 +222,7 @@ const onChangeImage = (e: ChangeEvent<HTMLInputElement>) => {
 
   const getCategories = async () => {
     try {
-      const res = await api.getCategories();
+      const res = await api.getProducts();
       console.log("res", res?.data?.payload)
       setCategories(res?.data?.payload)
     } catch (error) {
