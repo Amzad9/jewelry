@@ -1,6 +1,7 @@
-export interface Category {
+export interface CategoryType {
     name?: string,
     description?: string,
+    image?: File
 }
 export interface Categoryresponse {
     data: {

@@ -1,5 +1,8 @@
 
-import React from "react"
+import React, { ChangeEvent, useEffect, useState } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -26,6 +29,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import {
   Table,
@@ -38,43 +49,32 @@ import {
 import DrawerDemo from "@/components/Drawer"
 import { DrawerTrigger } from "@/components/ui/drawer"
 import { Dialog } from "@radix-ui/react-dialog"
+import api from "@/service/api"
+import { CategoryType } from '@/types/categoryTypes'
 
-const data: Payment[] = [
-  {
-    id: "m5gr84i9",
-    name: "success",
-    description: "ken99@yahoo.com",
-  },
-  {
-    id: "3u1reuv4",
-    name: "success",
-    description: "Abe45@gmail.com",
-  },
-  {
-    id: "derv1ws0",
-    name: "processing",
-    description: "Monserrat44@gmail.com",
-  },
-  {
-    id: "5kma53ae",
-    name: "success",
-    description: "Silas22@gmail.com",
-  },
-  {
-    id: "bhqecj4p",
-    name: "failed",
-    description: "carmella@hotmail.com",
-  },
-]
 
-export type Payment = {
-  id: string
-  name: string,
-  description: string
-}
+const FormSchema = z.object({
+  name: z.string().nonempty({
+    message: "Name is required.",
+  }),
+  description: z.string().nonempty({
+    message: "Description is required.",
+  }),
+
+ image: z
+    .custom<File>((v) => v instanceof File, {
+      message: 'Image is required',
+    })
+  // .refine((file) => file && file.type.startsWith("image/"), {
+  //   message: "Only image files are allowed.",
+  // })
+  // .refine((file) => file && file.size <= 5 * 1024 * 1024, {
+  //   message: "File size must not exceed 5MB.",
+  // }),
+})
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const columns: ColumnDef<Payment>[] = [
+export const columns: ColumnDef<CategoryType>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -98,8 +98,25 @@ export const columns: ColumnDef<Payment>[] = [
     enableHiding: false,
   },
   {
+    accessorKey: "image",
+    header: "Image",
+    cell: ({ row }) => (
+      <img className="w-8 h-8" src={row.getValue("image")} />
+    ),
+  },
+  {
     accessorKey: "name",
-    header: "Name",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Name
+          <ArrowUpDown />
+        </Button>
+      )
+    },
     cell: ({ row }) => (
       <div className="capitalize">{row.getValue("name")}</div>
     ),
@@ -124,7 +141,7 @@ export const columns: ColumnDef<Payment>[] = [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const payment = row.original
+      const payment = row
 
       return (
         <DropdownMenu>
@@ -137,7 +154,7 @@ export const columns: ColumnDef<Payment>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
+              onClick={() => navigator.clipboard.writeText(payment?.id)}
             >
               Copy payment ID
             </DropdownMenuItem>
@@ -151,7 +168,31 @@ export const columns: ColumnDef<Payment>[] = [
   },
 ]
 
-export function Category() {
+function Category() {
+ const [imageFile, setImageFile] = useState<File | undefined>(undefined);
+  const [preview, setPreview] = React.useState<string | null>(null);
+// const [error, setError] = useState<string | null>(null);
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      image: imageFile
+    },
+  })
+const onChangeImage = (e: ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0] || null;
+  if (file && file.type.startsWith("image/")) {
+    setImageFile(file);
+    form.setValue("image", file); // Update the form state
+    setPreview(URL.createObjectURL(file));
+  } else {
+    alert("Please upload a valid image file.");
+    setPreview(null);
+    form.setValue("image", null); // Reset the form state
+  }
+};
+  const [categories, setCategories] = useState<CategoryType[]>([]);
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -161,7 +202,7 @@ export function Category() {
   const [rowSelection, setRowSelection] = React.useState({})
 
   const table = useReactTable({
-    data,
+    data: categories,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -179,11 +220,77 @@ export function Category() {
     },
   })
 
+  const getCategories = async () => {
+    try {
+      const res = await api.getCategories();
+      console.log("res", res?.data?.payload)
+      setCategories(res?.data?.payload)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  useEffect(() => {
+    getCategories()
+  }, [])
+  const addCategory = async (data: z.infer<typeof FormSchema>) => {
+
+
+  const formData = new FormData();
+ formData.append("name", data.name);
+      formData.append("description", data.description);
+  if (data.image instanceof File) {
+    console.log(formData);
+    formData.append("image", data.image);
+  }
+    try {
+      
+      const res = await api.addCategory(formData)
+      console.log("resData", res)
+    } catch (error) {
+      console.log(error)
+    }
+  }
   return (
     <>
-
       <div className="w-full">
-        <DrawerDemo onClick={() => alert("Hi")}>Data</DrawerDemo>
+        <DrawerDemo title="Category Form">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(addCategory)}>
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem className="mb-4">
+                    <FormControl>
+                      <Input placeholder="Name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem className="mb-4">
+                    <FormControl>
+                      <Input placeholder="Discription" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <input
+                        type="file"
+                        accept="image/*"
+                        onChange = {onChangeImage}
+                      />
+             
+              <Button type="submit" className="w-full">Submit</Button>
+            </form>
+          </Form>
+ {preview && <img src={preview || undefined} alt="Preview" width="200" />}
+        </DrawerDemo>
         <Dialog>
           <DrawerTrigger>
             <Button variant="outline">Open Drawer</Button>
@@ -304,3 +411,4 @@ export function Category() {
     </>
   )
 }
+export  default Category

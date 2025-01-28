@@ -13,22 +13,24 @@ import {
 type DraweTypesprops = {
    children: React.ReactNode
    onClick?: React.MouseEventHandler<HTMLButtonElement>
+   title?: string
+   subTitle?: string
 }
-function DrawerDemo({ children, onClick }: DraweTypesprops) {
+function DrawerDemo({ children, onClick, title, subTitle }: DraweTypesprops) {
   return (
     <Drawer direction="right">
       <DrawerTrigger asChild>
         <Button variant="outline" onClick={onClick}>Open Drawer</Button>
       </DrawerTrigger>
-      <DrawerContent className="fixed right-0 top-0 h-screen w-96 rounded-none">
+      <DrawerContent className="fixed right-0 h-screen w-96 rounded-none">
         <div className="mx-auto w-full max-w-sm p-4">
           <DrawerHeader>
-            <DrawerTitle>Move Goal</DrawerTitle>
-            <DrawerDescription>Set your daily activity goal.</DrawerDescription>
+            <DrawerTitle>{title}</DrawerTitle>
+            <DrawerDescription>{subTitle}</DrawerDescription>
           </DrawerHeader>
-           <div>{children}</div>
+           <div className="px-4">{children}</div>
           <DrawerFooter>
-            <Button>Submit</Button>
+            {/* <Button>Submit</Button> */}
             <DrawerClose asChild>
               <Button variant="outline">Cancel</Button>
             </DrawerClose>

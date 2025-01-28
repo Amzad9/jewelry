@@ -8,7 +8,9 @@ function Home() {
                 <AppSidebar />
                 <main className="container">
                     <SidebarTrigger />
-                    <Outlet />
+                    <div className="px-4">
+                        <Outlet />
+                    </div>
                 </main>
             </SidebarProvider>
         </>
