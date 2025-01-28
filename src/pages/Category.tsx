@@ -189,7 +189,7 @@ const onChangeImage = (e: ChangeEvent<HTMLInputElement>) => {
   } else {
     alert("Please upload a valid image file.");
     setPreview(null);
-    form.setValue("image", null); // Reset the form state
+    // form.setValue("image", File); // Reset the form state
   }
 };
   const [categories, setCategories] = useState<CategoryType[]>([]);
