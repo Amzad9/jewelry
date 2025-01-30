@@ -6,12 +6,19 @@
     "module": "ESNext",
     "skipLibCheck": true,
 
+    "composite": true,
+    "declaration": true,
+    "noEmit": false,
+    "outDir": "./dist",
+
     /* Bundler mode */
     "moduleResolution": "bundler",
+    // "allowImportingTsExtensions": true,
     "allowImportingTsExtensions": true,
+    "emitDeclarationOnly": true, // Add this
     "isolatedModules": true,
     "moduleDetection": "force",
-    "noEmit": true,
+    // "noEmit": true,
 
     /* Linting */
     "strict": true,
