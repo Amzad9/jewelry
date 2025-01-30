@@ -6,11 +6,15 @@ import {
     MenubarTrigger,
 } from "@/components/ui/menubar"
 import { Button } from "./ui/button"
+import { logoutUser } from "@/store/auth/authThunks"
+import { useAppDispatch } from "@/store/store"
 
 function TopNavigation() {
-   const navigate = useNavigate()
+   const navigate = useNavigate();
+   const dispatch = useAppDispatch();
+
     const onLogout = () => {
-        sessionStorage.removeItem("token")
+        dispatch(logoutUser())
         navigate('/login')
     }
     return (

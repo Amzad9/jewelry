@@ -5,6 +5,7 @@ const headers = {
 }
 const service = axios.create({
     baseURL: 'https://nichestore.vercel.app/api/v2/',
+    timeout: 15000,
     headers: {
         ...headers
     }
