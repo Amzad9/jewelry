@@ -4,7 +4,8 @@ const headers = {
     "Content-Type": "application/json",
 }
 const service = axios.create({
-    baseURL: 'https://nichestore.vercel.app/api/v2/',
+    baseURL: 'http://localhost:8080/api/v2/',
+    // baseURL: 'https://nichestore.vercel.app/api/v2/',
     timeout: 15000,
     headers: {
         ...headers

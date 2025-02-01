@@ -18,7 +18,7 @@ function TopNavigation() {
         navigate('/login')
     }
     return (
-        <Menubar className="py-2 h-auto justify-between">
+        <Menubar className="py-2 h-auto sticky top-0 justify-between">
             <MenubarMenu>
                 <SidebarTrigger />
                 <MenubarTrigger>

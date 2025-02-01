@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Drawer,
   DrawerClose,
@@ -8,29 +8,37 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer"
+} from "@/components/ui/drawer";
 
-type DraweTypesprops = {
-   children: React.ReactNode
-   onClick?: React.MouseEventHandler<HTMLButtonElement>
-   title?: string
-   subTitle?: string
-}
-function DrawerDemo({ children, onClick, title, subTitle }: DraweTypesprops) {
+type DrawerTypesProps = {
+  children: React.ReactNode;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  title?: string;
+  subTitle?: string;
+  open?: boolean;
+  setOpen?: () => void;
+};
+
+function DrawerDemo({
+  children,
+  open,
+  setOpen,
+  title = "Default Title",
+  subTitle = "",
+}: DrawerTypesProps) {
   return (
-    <Drawer direction="right">
+    <Drawer direction="right" open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <Button variant="outline" onClick={onClick}>Open Drawer</Button>
+        <Button variant="outline">Open Drawer</Button>
       </DrawerTrigger>
       <DrawerContent className="fixed right-0 h-screen w-96 rounded-none">
         <div className="mx-auto w-full max-w-sm p-4">
           <DrawerHeader>
             <DrawerTitle>{title}</DrawerTitle>
-            <DrawerDescription>{subTitle}</DrawerDescription>
+            {subTitle && <DrawerDescription>{subTitle}</DrawerDescription>}
           </DrawerHeader>
-           <div className="px-4">{children}</div>
+          <div className="px-4">{children}</div>
           <DrawerFooter>
-            {/* <Button>Submit</Button> */}
             <DrawerClose asChild>
               <Button variant="outline">Cancel</Button>
             </DrawerClose>
@@ -38,7 +46,7 @@ function DrawerDemo({ children, onClick, title, subTitle }: DraweTypesprops) {
         </div>
       </DrawerContent>
     </Drawer>
-  )
+  );
 }
 
-export default DrawerDemo
+export default DrawerDemo;
